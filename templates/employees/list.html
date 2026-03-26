@@ -5,7 +5,6 @@
         <h1>עובדים</h1>
         <a href="/ui/employees/new" class="btn">הוסף עובד חדש</a>
     </div>
-    
     <form class="filters-bar" method="GET" action="/ui/employees">
         <div class="form-group">
             <label>סטטוס שיוך:</label>
@@ -14,22 +13,18 @@
                 <option value="unassigned" {% if qs.get('filter_type') == 'unassigned' %}selected{% endif %}>ללא משרד</option>
             </select>
         </div>
-        
         <div class="form-group">
             <label>מחלקה:</label>
             <input type="text" name="department" class="form-control" style="width: 120px;" value="{{ qs.get('department','') }}">
         </div>
-        
         <div class="form-group">
             <label>ותק מינימלי:</label>
             <input type="number" name="min_seniority" class="form-control" style="width: 80px;" value="{{ qs.get('min_seniority','') }}">
         </div>
-        
         <div class="form-group">
             <label>ותק מקסימלי:</label>
             <input type="number" name="max_seniority" class="form-control" style="width: 80px;" value="{{ qs.get('max_seniority','') }}">
         </div>
-        
         <div class="form-group">
             <label>מיון עובדים:</label>
             <select name="sort" class="form-control" style="width: auto;">
@@ -39,17 +34,14 @@
                 <option value="seniority" {% if qs.get('sort') == 'seniority' %}selected{% endif %}>ותק</option>
             </select>
         </div>
-        
         <div class="form-group">
             <select name="order" class="form-control" style="width: auto;">
                 <option value="asc" {% if qs.get('order') == 'asc' %}selected{% endif %}>עולה</option>
                 <option value="desc" {% if qs.get('order') == 'desc' %}selected{% endif %}>יורד</option>
             </select>
         </div>
-        
         <button type="submit" class="btn">סנן ומיין</button>
     </form>
-
     <div class="table-responsive">
         <table>
             <thead>
@@ -58,7 +50,8 @@
                     <th>שם</th>
                     <th>מחלקה</th>
                     <th>ותק</th>
-                    <th>שיוך משרד</th>
+                    <th>קומת משרד</th>
+                    <th>חדר משרד</th>
                     <th>פעולות</th>
                 </tr>
             </thead>
@@ -69,22 +62,20 @@
                     <td>{{ e.name }}</td>
                     <td>{{ e.department }}</td>
                     <td>{{ e.seniority }} שנים</td>
-                    <td>
-                        {% if e.office_id %}
-                            קומה {{ e.office_floor }}, חדר {{ e.office_room_number }}
-                        {% else %}
-                            ללא שיוך
-                        {% endif %}
-                    </td>
+                    <td>{% if e.office_id %}{{ e.office_floor }}{% else %}-{% endif %}</td>
+                    <td>{% if e.office_id %}{{ e.office_room_number }}{% else %}-{% endif %}</td>
                     <td>
                         <a href="/ui/employees/{{ e.id }}" class="btn btn-secondary">צפה</a>
+                        <a href="/ui/employees/{{ e.id }}/edit" class="btn btn-secondary">ערוך</a>
+                        <form action="/ui/employees/{{ e.id }}/delete" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">מחק</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    
     <div class="pagination">
         {% if page > 1 %}
         <a href="?page={{ page - 1 }}&filter_type={{ qs.get('filter_type','') }}&department={{ qs.get('department','') }}&min_seniority={{ qs.get('min_seniority','') }}&max_seniority={{ qs.get('max_seniority','') }}&sort={{ qs.get('sort','id') }}&order={{ qs.get('order','asc') }}" class="page-item">הקודם</a>

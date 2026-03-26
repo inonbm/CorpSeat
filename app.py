@@ -1,13 +1,12 @@
-from flask import Flask, g
+from flask import Flask, g, redirect
 from dal.db import get_db_connection
 from routes.api_routes import api_bp
 from routes.ui_routes import ui_bp
 
 app = Flask(__name__)
+app.secret_key = 'corpseat-secret-key-2026'
 app.register_blueprint(api_bp)
 app.register_blueprint(ui_bp)
-
-from flask import redirect, url_for
 
 @app.route('/')
 def index():

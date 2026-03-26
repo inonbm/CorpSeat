@@ -5,7 +5,6 @@
         <h1>משרדים</h1>
         <a href="/ui/offices/new" class="btn">הוסף משרד חדש</a>
     </div>
-    
     <form class="filters-bar" method="GET" action="/ui/offices">
         <div class="form-group">
             <label>סינון משרד:</label>
@@ -16,7 +15,6 @@
                 <option value="overcapacity" {% if qs.get('filter_type') == 'overcapacity' %}selected{% endif %}>בחריגת תפוסה</option>
             </select>
         </div>
-        
         <div class="form-group">
             <label>מיון משרדים:</label>
             <select name="sort" class="form-control" style="width: auto;">
@@ -33,7 +31,6 @@
         </div>
         <button type="submit" class="btn">סנן ומיין</button>
     </form>
-
     <div class="table-responsive">
         <table>
             <thead>
@@ -41,8 +38,8 @@
                     <th>מזהה</th>
                     <th>קומה</th>
                     <th>חדר</th>
-                    <th>תפוסה מקסימלית</th>
-                    <th>משוייכים כעת</th>
+                    <th>תפוסה מרבית</th>
+                    <th>משויכים כעת</th>
                     <th>פעולות</th>
                 </tr>
             </thead>
@@ -56,13 +53,16 @@
                     <td>{{ o.employee_count }}</td>
                     <td>
                         <a href="/ui/offices/{{ o.id }}" class="btn btn-secondary">צפה</a>
+                        <a href="/ui/offices/{{ o.id }}/edit" class="btn btn-secondary">ערוך</a>
+                        <form action="/ui/offices/{{ o.id }}/delete" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">מחק</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    
     <div class="pagination">
         {% if page > 1 %}
         <a href="?page={{ page - 1 }}&filter_type={{ qs.get('filter_type','') }}&sort={{ qs.get('sort','id') }}&order={{ qs.get('order','asc') }}" class="page-item">הקודם</a>

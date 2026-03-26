@@ -58,7 +58,7 @@ def get_offices_list(conn, filter_type=None, sort_field='id', sort_order='asc'):
     if filter_type == 'empty':
         offices = [o for o in offices if o['employee_count'] == 0]
     elif filter_type == 'available':
-        offices = [o for o in offices if 0 < o['employee_count'] <= o['capacity']]
+        offices = [o for o in offices if o['employee_count'] < o['capacity']]
     elif filter_type == 'overcapacity':
         offices = [o for o in offices if o['employee_count'] > o['capacity']]
         

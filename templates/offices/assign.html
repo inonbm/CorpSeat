@@ -23,7 +23,7 @@
                     <label for="emp_{{ e.id }}" style="display:inline; font-weight:normal; cursor:pointer;">
                         <strong>{{ e.name }}</strong> (מחלקה: {{ e.department }}) 
                         <span style="color:var(--text-muted); margin-right:1rem;">
-                        | משרד נוכחי: {% if e.office_id %}ק' {{ e.office_floor }} חד' {{ e.office_room_number }}{% else %}ללא במערכת{% endif %}
+                        | משרד נוכחי: {% if e.office_id %}ק' {{ e.office_floor }} חד' {{ e.office_room_number }}{% else %}ללא משרד{% endif %}
                         </span>
                     </label>
                 </div>

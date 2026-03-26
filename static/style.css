@@ -258,3 +258,11 @@ select.form-control { cursor: pointer; appearance: none; background-image: url("
 
 /* Checkboxes for assignment strictly styled */
 input[type="checkbox"] { width: 1.2rem; height: 1.2rem; accent-color: var(--primary); cursor: pointer; }
+
+/* Flash Messages */
+.flash { padding: 1rem 1.5rem; border-radius: var(--radius-md); margin-bottom: 0.75rem; font-weight: 500; font-size: 0.95rem; }
+.flash-success { background: var(--status-ok-bg); color: var(--status-ok-text); border: 1px solid var(--status-ok-border); }
+.flash-error { background: var(--status-err-bg); color: var(--status-err-text); border: 1px solid var(--status-err-border); }
+
+/* Table action buttons spacing */
+td .btn { margin-left: 0.25rem; margin-bottom: 0.25rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; }

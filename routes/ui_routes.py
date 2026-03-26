@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, render_template, g, url_for
+from flask import Blueprint, request, redirect, render_template, g, url_for, flash
 from services import office_service, employee_service
 
 ui_bp = Blueprint('ui', __name__, url_prefix='/ui')
@@ -31,11 +31,16 @@ def new_office():
 
 @ui_bp.route('/offices', methods=['POST'])
 def create_office():
-    floor = int(request.form.get('floor'))
-    room = int(request.form.get('room_number'))
-    cap = int(request.form.get('capacity'))
-    office_service.create_office(g.db, floor, room, cap)
-    g.db.commit()
+    try:
+        floor = int(request.form.get('floor'))
+        room = int(request.form.get('room_number'))
+        cap = int(request.form.get('capacity'))
+        office_service.create_office(g.db, floor, room, cap)
+        g.db.commit()
+        flash('המשרד נוצר בהצלחה', 'success')
+    except Exception as e:
+        g.db.rollback()
+        flash('שגיאה ביצירת המשרד: ' + str(e), 'error')
     return redirect(url_for('ui.list_offices'))
 
 @ui_bp.route('/offices/<int:office_id>', methods=['GET'])
@@ -59,17 +64,27 @@ def edit_office(office_id):
 
 @ui_bp.route('/offices/<int:office_id>/edit', methods=['POST'])
 def update_office(office_id):
-    floor = int(request.form.get('floor'))
-    room = int(request.form.get('room_number'))
-    cap = int(request.form.get('capacity'))
-    office_service.update_office(g.db, office_id, floor, room, cap)
-    g.db.commit()
+    try:
+        floor = int(request.form.get('floor'))
+        room = int(request.form.get('room_number'))
+        cap = int(request.form.get('capacity'))
+        office_service.update_office(g.db, office_id, floor, room, cap)
+        g.db.commit()
+        flash('המשרד עודכן בהצלחה', 'success')
+    except Exception as e:
+        g.db.rollback()
+        flash('שגיאה בעדכון המשרד: ' + str(e), 'error')
     return redirect(url_for('ui.get_office', office_id=office_id))
 
 @ui_bp.route('/offices/<int:office_id>/delete', methods=['POST'])
 def delete_office(office_id):
-    office_service.delete_office(g.db, office_id)
-    g.db.commit()
+    try:
+        office_service.delete_office(g.db, office_id)
+        g.db.commit()
+        flash('המשרד נמחק בהצלחה', 'success')
+    except Exception as e:
+        g.db.rollback()
+        flash('שגיאה במחיקת המשרד: ' + str(e), 'error')
     return redirect(url_for('ui.list_offices'))
 
 @ui_bp.route('/employees', methods=['GET'])
@@ -112,14 +127,19 @@ def new_employee():
 
 @ui_bp.route('/employees', methods=['POST'])
 def create_employee():
-    name = request.form.get('name')
-    dept = request.form.get('department')
-    hire = request.form.get('hire_date')
-    sal = float(request.form.get('salary'))
-    off_id = request.form.get('office_id')
-    office_id = int(off_id) if off_id else None
-    employee_service.create_employee(g.db, name, dept, hire, sal, office_id)
-    g.db.commit()
+    try:
+        name = request.form.get('name')
+        dept = request.form.get('department')
+        hire = request.form.get('hire_date')
+        sal = float(request.form.get('salary'))
+        off_id = request.form.get('office_id')
+        office_id = int(off_id) if off_id else None
+        employee_service.create_employee(g.db, name, dept, hire, sal, office_id)
+        g.db.commit()
+        flash('העובד נוסף בהצלחה', 'success')
+    except Exception as e:
+        g.db.rollback()
+        flash('שגיאה בהוספת העובד: ' + str(e), 'error')
     return redirect(url_for('ui.list_employees'))
 
 @ui_bp.route('/employees/<int:employee_id>', methods=['GET'])
@@ -136,20 +156,30 @@ def edit_employee(employee_id):
 
 @ui_bp.route('/employees/<int:employee_id>/edit', methods=['POST'])
 def update_employee(employee_id):
-    name = request.form.get('name')
-    dept = request.form.get('department')
-    hire = request.form.get('hire_date')
-    sal = float(request.form.get('salary'))
-    off_id = request.form.get('office_id')
-    office_id = int(off_id) if off_id else None
-    employee_service.update_employee(g.db, employee_id, name, dept, hire, sal, office_id)
-    g.db.commit()
+    try:
+        name = request.form.get('name')
+        dept = request.form.get('department')
+        hire = request.form.get('hire_date')
+        sal = float(request.form.get('salary'))
+        off_id = request.form.get('office_id')
+        office_id = int(off_id) if off_id else None
+        employee_service.update_employee(g.db, employee_id, name, dept, hire, sal, office_id)
+        g.db.commit()
+        flash('פרטי העובד עודכנו בהצלחה', 'success')
+    except Exception as e:
+        g.db.rollback()
+        flash('שגיאה בעדכון העובד: ' + str(e), 'error')
     return redirect(url_for('ui.get_employee', employee_id=employee_id))
 
 @ui_bp.route('/employees/<int:employee_id>/delete', methods=['POST'])
 def delete_employee(employee_id):
-    employee_service.delete_employee(g.db, employee_id)
-    g.db.commit()
+    try:
+        employee_service.delete_employee(g.db, employee_id)
+        g.db.commit()
+        flash('העובד נמחק בהצלחה', 'success')
+    except Exception as e:
+        g.db.rollback()
+        flash('שגיאה במחיקת העובד: ' + str(e), 'error')
     return redirect(url_for('ui.list_employees'))
 
 @ui_bp.route('/assign', methods=['GET'])
@@ -161,8 +191,13 @@ def assign_ui():
 
 @ui_bp.route('/assign', methods=['POST'])
 def process_assign():
-    office_id = int(request.form.get('office_id'))
-    emp_ids = request.form.getlist('employee_ids')
-    employee_ids = [int(eid) for eid in emp_ids]
-    office_service.assign_employees_to_office(g.db, office_id, employee_ids)
-    return redirect(url_for('ui.get_office', office_id=office_id))
+    try:
+        office_id = int(request.form.get('office_id'))
+        emp_ids = request.form.getlist('employee_ids')
+        employee_ids = [int(eid) for eid in emp_ids]
+        office_service.assign_employees_to_office(g.db, office_id, employee_ids)
+        flash('העובדים שויכו למשרד בהצלחה', 'success')
+        return redirect(url_for('ui.get_office', office_id=office_id))
+    except Exception as e:
+        flash('שגיאה בשיוך העובדים: ' + str(e), 'error')
+        return redirect(url_for('ui.assign_ui'))

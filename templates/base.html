@@ -3,23 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CorpSeat | CRM לניהול עובדים ונכסים</title>
-    <link rel="stylesheet" href="/static/style.css?v=3">
+    <title>CorpSeat | מערכת ניהול עובדים ומשרדים</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+    <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
     <div class="app-layout">
         <aside class="sidebar">
             <div class="brand" dir="ltr"><span>C</span>orpSeat CRM</div>
             <nav class="nav-links">
-                <a href="/ui/offices">ניהול משרדים ונכסים</a>
-                <a href="/ui/employees">מאגר עובדים במערכת</a>
-                <a href="/ui/assign">מיפוי עובדים למשרד</a>
+                <a href="/ui/offices" class="{% if request.path.startswith('/ui/offices') %}active{% endif %}">ניהול משרדים</a>
+                <a href="/ui/employees" class="{% if request.path.startswith('/ui/employees') %}active{% endif %}">מאגר עובדים</a>
+                <a href="/ui/assign" class="{% if request.path.startswith('/ui/assign') %}active{% endif %}">שיוך עובדים למשרד</a>
             </nav>
         </aside>
         <div class="main-content">
             <header class="topbar">
                 <h2>סביבת עבודה ארגונית</h2>
             </header>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div style="padding: 1rem 2rem 0;">
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
             <main class="container">
                 {% block content %}{% endblock %}
             </main>

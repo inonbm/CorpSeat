@@ -13,7 +13,7 @@
     <h2>נתונים אישיים</h2>
     <p>מספר עובד: <strong>{{ employee.id }}</strong></p>
     <p>מחלקה: <strong>{{ employee.department }}</strong></p>
-    <p>תאריך גיוס: <strong>{{ employee.hire_date }}</strong></p>
+    <p>תאריך העסקה: <strong>{{ employee.hire_date }}</strong></p>
     <p>ותק נצבר: <strong>{{ employee.seniority }} שנים</strong></p>
     <p>משכורת: <strong>{{ employee.salary }}</strong></p>
     <p>מיקום משרד נוכחי: 
@@ -21,7 +21,7 @@
         {% if employee.office_id %}
             קומה {{ employee.office_floor }}, חדר {{ employee.office_room_number }}
         {% else %}
-            אין משרד משוייך (Unassigned)
+            לא משויך למשרד
         {% endif %}
         </strong>
     </p>
