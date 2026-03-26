@@ -1,210 +1,84 @@
-# Employees and Offices Management System
+# CorpSeat - Employees and Offices Management System
 
-## Phase 0: Requirements Analysis
+CorpSeat is a robust, full-stack management system built specifically without JavaScript, utilizing raw SQLite and Python/Flask to maintain strict server-side logic and processing.
 
-### 1. Entities and Relationships
-**Employee**
-* `id` (PK, INTEGER)
-* `name` (TEXT, NOT NULL)
-* `department` (TEXT, NOT NULL)
-* `hire_date` (TEXT, NOT NULL) - Must not be in the future (Validated in business logic only).
-* `salary` (REAL, NOT NULL) - Must be > 0.
-* `office_id` (FK → Office, nullable)
-* `seniority` - Computed property: `floor((today - hire_date).days / 365)`, never stored in DB.
-
-**Office**
-* `id` (PK, INTEGER)
-* `floor` (INTEGER, NOT NULL)
-* `room_number` (INTEGER, NOT NULL)
-* `capacity` (INTEGER, NOT NULL) - Must be > 0.
-* Unique constraint on (floor, room_number).
-
-**Relationships**
-* One office can house many employees.
-* An employee belongs to zero or one office.
-* Office deletion: `ON DELETE SET NULL`. If an office is deleted, all its employees become unassigned.
-
-**Capacity Behavior:**
-`capacity` is informational strictly. It defines intended maximums, but does NOT act as a hard block during assignment. Overcapacity is a valid system state, reportable via API and highlightable via UI.
-
-### 2. Constraints and Validation Rules
-* **Database Layer:**
-  * Strict Foreign Key enforcement via mandatory `PRAGMA foreign_keys = ON;` on every connection.
-  * Check constraints: `salary > 0`, `capacity > 0`.
-  * Unique pair constraint: `UNIQUE(floor, room_number)`.
-* **Business Logic Layer:**
-  * `hire_date` must not be in the future.
-  * Verification of employee existence during assignment. If ANY provided `employee_id` is invalid, the entire assignment batch fails atomically (rollback).
-  * Safe reassignment: Permitted explicitly. Target `office_id` is updated. No-op if they are already in the correct office.
-
-### 3. Edge Cases Defined
-* **Overcapacity Assignments:** A batch assignment pushing an office over capacity must successfully process. The state will be reflected in `/api/offices?filter=overcapacity`.
-* **Atomic Failure:** Batch assignment where 2 IDs are valid and 1 is invalid -> None of the 3 IDs get processed (transaction rollback).
-* **Office Deletion cascades gracefully:** No orphans, `office_id` safely `NULL`ed ensuring structural integrity without deleting employee records.
-* **Seniority Edge Computation:** Leap years handling implicitly via typical Python libraries or raw computation of days. Exactly today = 0. Exactly 365 days ago = 1 year.
-* **Future hire_date injection:** Blocked safely at service layer.
-
----
-
-## Phase 1: Project Structure
-
-### Directory Tree
+## Project Structure
 ```text
 CorpSeat/
-├── app.py                  # Application entry point and Flask initialization
-├── dal/                    # Data Access Layer
-│   ├── db.py               # Database connection and setup routines
-│   ├── employee_dal.py     # Employee raw SQL queries
-│   └── office_dal.py       # Office raw SQL queries
-├── routes/                 # HTTP Routing Layer
-│   ├── api_routes.py       # JSON API routes namespace (/api/)
-│   └── ui_routes.py        # HTML/UI routes namespace (/ui/)
-├── services/               # Business Logic Layer
-│   ├── employee_service.py # Employee business logic and validation
-│   └── office_service.py   # Office business logic, assignment, capacity rules
-├── templates/              # HTML Templates (Hebrew text only)
-│   ├── base.html
-│   ├── employees/
-│   │   ├── list.html
-│   │   ├── details.html
-│   │   └── form.html
-│   └── offices/
-│       ├── list.html
-│       ├── details.html
-│       ├── form.html
-│       └── assign.html
-└── static/                 # Static assets
-    └── style.css           # Vanilla CSS only
+├── app.py                   # Main Flask Application
+├── corpseat.db              # SQLite Database (generated)
+├── dal/                     # Data Access Layer (Raw SQL)
+│   ├── db.py                # Connection Factory
+│   ├── employee_dal.py      # Employee SQL Operations
+│   ├── office_dal.py        # Office SQL Operations
+│   └── schema.sql           # Database Table Definitions
+├── routes/                  # Controller Layer
+│   ├── api_routes.py        # JSON-only API (`/api/`)
+│   └── ui_routes.py         # HTML/POST form routes (`/ui/`)
+├── services/                # Business Logic Layer
+│   ├── employee_service.py  # Employee Validation & Rules
+│   └── office_service.py    # Office Matrix & Atomic Assignments
+├── static/                  # Static Files
+│   └── style.css            # Vanilla CSS (No Frameworks)
+├── templates/               # Jinja2 HTML Templates
+│   ├── base.html            # Core Base Template
+│   ├── employees/           # Employee Views (List, Details, Form)
+│   └── offices/             # Office Views (List, Details, Form, Assign)
+└── tests/                   # Pytest Test Suites
+    ├── test_api.py          # API Endpoint Tests
+    ├── test_dal.py          # SQL Query Logic Tests
+    ├── test_db.py           # Database Constraint Tests
+    ├── test_integration.py  # End-to-End System Flow Tests
+    ├── test_services.py     # Business Rules & Error States
+    └── test_ui.py           # HTML Structure (No-JS Enforcement) Tests
 ```
 
-### Responsibility Mapping
-* **`routes/`**: Strictly handles HTTP requests, extracts parameters, standardizes standard responses, and delegates to the `services/` layer. It has zero knowledge of the database.
-* **`services/`**: Computes business logic, validates rules (e.g., `hire_date` limit, positive salaries/capacities), checks atomic assignments, computes `seniority`, orchestrates workflows. No raw SQL or requests objects here.
-* **`dal/`**: Executes raw SQLite queries (`INSERT`, `SELECT`, `UPDATE`, `DELETE`). It knows nothing about HTTP or business requirements (besides basic DB constraints).
-* **`templates/`**: Renders dynamic HTML correctly representing internal data, filtering queries, and pagination values. Contains only Hebrew text.
-* **`static/`**: Houses the strict Vanilla CSS handling styling, including state-based highlights (red rows for overcapacity offices).
+## Installation Instructions
 
-### Namespace Handlers
-* **`routes/api_routes.py`**: Exclusively handles all endpoints prefixed with `/api/`. It strictly returns standard JSON responses and JSON error payloads. No HTML.
-* **`routes/ui_routes.py`**: Exclusively handles all endpoints prefixed with `/ui/`.
-  * **GET** requests render HTML templates cleanly.
-  * **POST** requests process UI mutations (forms) and return redirects to the appropriate `/ui/` pages. Never returns JSON.
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/inonbm/CorpSeat.git
+   cd CorpSeat
+   ```
 
----
-*End of Phase 1 documentation.*
+2. **Set up Virtual Environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
----
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Phase 2: Database Design
+4. **Initialize the Database**
+   This creates `corpseat.db` with the schema matching the architectural logic.
+   ```bash
+   python3 -c "from dal.db import init_db; init_db()"
+   ```
 
-### SQL Schema (`dal/schema.sql`)
-The underlying datastore exclusively uses strictly defined SQLite constraints.
+5. **Run the Project**
+   ```bash
+   python3 app.py
+   ```
+   Open your browser and navigate to: `http://127.0.0.1:5000/ui/offices`
 
-```sql
-CREATE TABLE offices (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    floor INTEGER NOT NULL,
-    room_number INTEGER NOT NULL,
-    capacity INTEGER NOT NULL CHECK (capacity > 0),
-    UNIQUE(floor, room_number)
-);
-
-CREATE TABLE employees (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    department TEXT NOT NULL,
-    hire_date TEXT NOT NULL,
-    salary REAL NOT NULL CHECK (salary > 0),
-    office_id INTEGER NULL,
-    FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE SET NULL
-);
+## Testing Instructions
+The system includes an extensive 24-test suite that validates data cascading, logic bounds, and HTTP rendering compliance.
+```bash
+source venv/bin/activate
+pytest -v
 ```
 
-### Constraints & Integrity Rules
-* **Foreign Keys Enforcement**: SQLite requires explicit PRAGMA definition to enable enforcement. `db.py` rigidly attaches `PRAGMA foreign_keys = ON;` on every connection.
-* **Cascading Delete**: Validated `ON DELETE SET NULL` upon office removal ensures orphaned employees drop cleanly into the unassigned pool.
-* **Check Validators**: DB strictly ensures `salary > 0` and `capacity > 0`.
-* **Unique Spaces**: A `UNIQUE` constraint over `(floor, room_number)` guards against overlapping physical layouts.
-* **Deferred Logic**: Due to SQLite restriction on dynamic checking, dates (`hire_date` limit) are shifted to application/business logic validation scope exclusively.
+## Architecture Decisions
 
----
-*End of Phase 2 documentation.*
-
----
-
-## Phase 3: Data Access Layer
-
-The Data Access layer explicitly isolates raw SQL queries away from the API/Services layer.
-* **ORM Zero**: No Object-Relational Mapping (ORM) dependencies are utilized.
-* **Direct Operations**: Implements CRUD functions via explicit raw parameterized queries, maximizing efficiency and protecting against SQL injections.
-* **Connection Context**: Every DAL function ingests a SQLite connection object (`conn`), allowing the higher logic layers to tightly control Transactionality and Rollbacks while the DAL blindly safely executes SQL.
-* **Key Implementations**:
-  * `dal/office_dal.py`: `create_office`, `get_office`, `get_all_offices`, `update_office`, `delete_office`
-  * `dal/employee_dal.py`: `create_employee`, `get_employee`, `get_all_employees`, `update_employee`, `delete_employee`, `get_employees_by_office`
-* **Rigorous Validation**: Edge behaviors (invalid deletes yielding `0` rowcounts, fetching employees on empty/ghost offices returning native empty lists `[]`, and seamless cascading ON DELETE logic bounds) precisely tested within isolation.
-
----
-*End of Phase 3 documentation.*
-
----
-
-## Phase 4: Business Logic
-
-The Business Logic layer securely orchestrates rules, limits, and dynamic computations away from the Data Access Layer, forming the core application intelligence.
-* **Date & Limit Validations**: Explicit boundaries (`salary > 0`, `capacity > 0`, `hire_date <= today`) are strictly validated python-side before sending data to the DAL.
-* **Dynamic Seniority**: `seniority` is evaluated dynamically upon retrieval (`floor((today - hire_date).days / 365)`). It is strictly a computed property, never stored persistently.
-* **Permissive Capacity Rules**: While offices have defined capacities, the business layer explicitly permits *overcapacity*. Assignments bypassing capacity are allowed without triggering blocks or exceptions, relying rather on UI feedback.
-* **Atomic Assignments**: Routing bulk employees to an office runs inside an explicit transaction block (`try/except/rollback`). Every single requested `employee_id` in the batch is evaluated safely. Should any target fail validation (e.g. non-existent employee), the entire operation rolls back, keeping prior statuses fully untouched.
-* **Reassignments**: Direct reassignments override old `office_id` flawlessly, while assignments to already matching offices are gracefully caught and treated as efficient no-ops.
-
----
-*End of Phase 4 documentation.*
-
----
-
-## Phase 5: API & UI Routes (Flask)
-
-The Flask Routing layer acts strictly as a traffic controller managing parameters, triggering service logic, and dictating response shapes.
-* **Namespace Isolation**:
-  * `/api/`: Strictly serves generic JSON responses conforming exactly to the structured protocol.
-  * `/ui/` (GET): Strictly returns HTML template responses exclusively.
-  * `/ui/` (POST): Strictly processes UI form mutations and returns redirection bindings. No JSON mixing whatsoever.
-* **Consistent Pagination & Standardization**: All list endpoints implement robust pagination (`?page=X&limit=X`) serving standardized metadata (`total`, `total_pages`). Non-positive constraints bounce as HTTP `400 Bad Request`. Exceeding bounds returns graceful empty data configurations seamlessly.
-* **Refined Sort Filtering**: Request targets (`?sort=XXX`) are strictly validated against predetermined whitelists before dynamically ordering responses in Python memory.
-* **Extensive Endpoints Built**:
-  * `/api/offices`: Includes advanced dynamic filters targeting boolean states such as `empty`, `available`, and `overcapacity`.
-  * `/api/employees`: Advanced filters integrating `department` matches, unbound `unassigned` flags, and numerical bounds resolving `min_seniority`/`max_seniority`.
-  * `/api/assign`: Exposes an atomic JSON endpoint connecting Office structures cleanly to batches of Employees leveraging transactional rollbacks on fail.
-
----
-*End of Phase 5 documentation.*
-
----
-
-## Phase 6: UI (HTML/CSS ONLY)
-
-The Visual interface is strictly bounded to server-side render lifecycles strictly honoring Hebrew language constraints and zero-Javascript policies.
-* **Pure HTML/CSS Foundation**:
-  * Utilizes native, modern standard CSS variables, Flexbox layouts, and modern Web typography (`Inter`) yielding a premium UX natively without Tailwind/Bootstrap or any JS-based framework.
-  * Implements explicit native class-binding (`row-overcapacity`, `row-empty`, `row-available`) for distinct visual states computed entirely server-side.
-* **Server-Side Rendering Orchestration**: Native `GET` HTML query strings orchestrate full sorting and filtering matrices via standard HTML form submissions, preventing ANY client-side mapping operations or AJAX.
-* **Robust Navigation**: Global responsive navigation headers orchestrate page transitions internally via `href` anchors resolving directly to explicit `/ui/` Flask Endpoints.
-* **Form Mutations**: Every user state modification explicitly triggers a `POST` form parsing safely at endpoints before evaluating via business tier orchestrators causing HTTP safe `302/301` REDIRECTS to dynamic HTML endpoints natively.
-* **Continuous Validations**: Automated Pytest assertions (`test_ui.py`) explicitly sweep internal HTML response strings prohibiting any arbitrary `<script>` blocks ensuring flawless backend segregation.
-
----
-*End of Phase 6 documentation.*
-
----
-
-## Phase 7: Integration Testing
-
-End-to-end integration and system behavior was aggressively verified applying native Pytest testing modules against transient SQLite instances ensuring exact state isolations.
-* **Full Flow Coverage**: The `test_integration.py` sweeps the complete organizational flow: Creating Offices → Creating Employees → Atomic Batch Assignments → Filtering by Complex Contexts (Overcapacity, Seniority bounded values) → Office Deletion cascading correctly.
-* **Constraint Execution**: Confirmed `PRAGMA foreign_keys = ON` natively drops orphaned employees into unassigned modes directly at the database layer upon Office destruction without data corruption.
-* **UI/API Firewall Confidence**: Assertions verified strict bounding ensuring `/api/` emits exclusively JSON structures and `/ui/` exclusively processes HTML and form submissions, safely rejecting incorrect protocol methods.
-* **DOM Assertions**: Automated checking verified explicit semantic structures such as injection of the `row-overcapacity` visual class bindings correctly mapping backend states to template variables.
-* **Complete Regression Coverage**: 100% of the 24 internal architectural unit and integration tests successfully pass confirming rock-solid system stability, data integrity, and assignment logic.
-
----
-*End of Phase 7 documentation.*
+* **Why raw SQL without an ORM?**
+  Using Raw SQL allows immediate integration checking via `PRAGMA foreign_keys = ON;`, explicit definition of `ON DELETE SET NULL` cascades natively, explicit `CHECK` constraints on salaries/capacity, and complete visibility into the Data Access routines.
+* **Why no JavaScript?**
+  The requirement mandates a zero-JS frontend to completely separate complex processing from the client. All Filtering, Sorting, Pagination, and Validation metrics happen strictly on the server logic using Python algorithms and SQLite row returns, communicating purely through stateful HTML `POST/GET` rendering bindings via Jinja2 templates.
+* **Strict Routing Namespace Rules:**
+  To guarantee proper separation of concerns, boundaries have been established:
+  * `/api/`: Responses emit JSON configurations exclusively standardizing `{data: [...], meta/pagination: {...}}` contracts. Only accepts JSON protocol boundaries.
+  * `/ui/` (GET): Emits `text/html` structures exclusively rendering template layouts globally.
+  * `/ui/` (POST): Accepts structural `form/urlencoded` payloads updating the core states, explicitly ending exclusively in `301/302 Redirects` avoiding any mixed protocol streams.
