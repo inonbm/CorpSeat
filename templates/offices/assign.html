@@ -1,14 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="card">
-    <h1>חלון שיוך עובדים מרוכז (Batch Assignment)</h1>
-    <p style="color:var(--text-muted); margin-bottom:2rem;">בחר משרד יעד ואת הרכב העובדים שברצונך לשייך. הפעולה מתבצעת באופן אטומי ללא התחשבות במגבלת תפוסה נוקשה (ניתן להיכנס לחריגה חוקית).</p>
+    <h1>חלון שיוך עובדים מרוכז</h1>
     
     <form method="POST" action="/ui/assign">
         <div class="form-group">
-            <label>יעד שיוך (משרד)</label>
+            <label>שם המשרד</label>
             <select name="office_id" class="form-control" required style="font-weight:bold;">
-                <option value="">-- תבחר משרד מהרשימה --</option>
+                <option value="">-- בחר/י משרד מהרשימה --</option>
                 {% for o in offices %}
                 <option value="{{ o.id }}">קומה {{ o.floor }} חדר {{ o.room_number }} (תפוסה כעת: {{ o.employee_count }}/{{ o.capacity }})</option>
                 {% endfor %}
@@ -32,7 +31,7 @@
             </div>
         </div>
         
-        <button type="submit" class="btn" style="margin-top: 1rem; padding: 0.75rem 2rem;">שייך עובדים כעת אטומית</button>
+        <button type="submit" class="btn" style="margin-top: 1rem; padding: 0.75rem 2rem;">שייך עובדים למשרד</button>
     </form>
 </div>
 {% endblock %}
