@@ -16,7 +16,7 @@ def test_namespaces(client):
     assert res.status_code == 200
     assert res.content_type == 'application/json'
     
-    res = client.post('/ui/offices')
+    res = client.post('/ui/offices', data={'floor': '10', 'room_number': '100', 'capacity': '5'})
     assert res.status_code in [301, 302]
     
     res = client.get('/ui/offices')
