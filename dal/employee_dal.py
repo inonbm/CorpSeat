@@ -24,3 +24,13 @@ def delete_employee(conn, employee_id):
 
 def get_employees_by_office(conn, office_id):
     return conn.execute("SELECT * FROM employees WHERE office_id = ?", (office_id,)).fetchall()
+
+def get_employees_by_ids(conn, employee_ids):
+    if not employee_ids:
+        return []
+    placeholders = ','.join(['?'] * len(employee_ids))
+    return conn.execute(f"SELECT * FROM employees WHERE id IN ({placeholders})", tuple(employee_ids)).fetchall()
+
+def update_employee_office(conn, employee_id, office_id):
+    cur = conn.execute("UPDATE employees SET office_id = ? WHERE id = ?", (office_id, employee_id))
+    return cur.rowcount

@@ -145,3 +145,17 @@ The Data Access layer explicitly isolates raw SQL queries away from the API/Serv
 
 ---
 *End of Phase 3 documentation.*
+
+---
+
+## Phase 4: Business Logic
+
+The Business Logic layer securely orchestrates rules, limits, and dynamic computations away from the Data Access Layer, forming the core application intelligence.
+* **Date & Limit Validations**: Explicit boundaries (`salary > 0`, `capacity > 0`, `hire_date <= today`) are strictly validated python-side before sending data to the DAL.
+* **Dynamic Seniority**: `seniority` is evaluated dynamically upon retrieval (`floor((today - hire_date).days / 365)`). It is strictly a computed property, never stored persistently.
+* **Permissive Capacity Rules**: While offices have defined capacities, the business layer explicitly permits *overcapacity*. Assignments bypassing capacity are allowed without triggering blocks or exceptions, relying rather on UI feedback.
+* **Atomic Assignments**: Routing bulk employees to an office runs inside an explicit transaction block (`try/except/rollback`). Every single requested `employee_id` in the batch is evaluated safely. Should any target fail validation (e.g. non-existent employee), the entire operation rolls back, keeping prior statuses fully untouched.
+* **Reassignments**: Direct reassignments override old `office_id` flawlessly, while assignments to already matching offices are gracefully caught and treated as efficient no-ops.
+
+---
+*End of Phase 4 documentation.*
