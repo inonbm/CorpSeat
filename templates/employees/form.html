@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h1>{% if employee %}ערוך עובד{% else %}הוסף עובד חדש{% endif %}</h1>
+    <form method="POST" action="{% if employee %}/ui/employees/{{ employee.id }}/edit{% else %}/ui/employees{% endif %}">
+        <div class="form-group">
+            <label>שם מלא</label>
+            <input type="text" name="name" class="form-control" required value="{{ employee.name if employee else '' }}">
+        </div>
+        <div class="form-group">
+            <label>מחלקה (Department)</label>
+            <input type="text" name="department" class="form-control" required value="{{ employee.department if employee else '' }}">
+        </div>
+        <div class="form-group">
+            <label>תאריך גיוס (Hire Date)</label>
+            <input type="date" name="hire_date" class="form-control" required value="{{ employee.hire_date if employee else '' }}">
+        </div>
+        <div class="form-group">
+            <label>משכורת</label>
+            <input type="number" step="0.01" name="salary" class="form-control" required min="1" value="{{ employee.salary if employee else '' }}">
+        </div>
+        <div class="form-group">
+            <label>שיוך למשרד (אופציונלי)</label>
+            <select name="office_id" class="form-control">
+                <option value="">ללא שיוך</option>
+                {% for o in offices %}
+                <option value="{{ o.id }}" {% if employee and employee.office_id == o.id %}selected{% endif %}>
+                    קומה {{ o.floor }} - חדר {{ o.room_number }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn">שמור נתוני עובד</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>משרדים</h1>
+        <a href="/ui/offices/new" class="btn">הוסף משרד חדש</a>
+    </div>
+    
+    <form class="filters-bar" method="GET" action="/ui/offices">
+        <div class="form-group">
+            <label>סינון משרד:</label>
+            <select name="filter_type" class="form-control" style="width: auto;">
+                <option value="">הכל</option>
+                <option value="empty" {% if qs.get('filter_type') == 'empty' %}selected{% endif %}>רק ריקים</option>
+                <option value="available" {% if qs.get('filter_type') == 'available' %}selected{% endif %}>פנויים</option>
+                <option value="overcapacity" {% if qs.get('filter_type') == 'overcapacity' %}selected{% endif %}>בחריגת תפוסה</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>מיון משרדים:</label>
+            <select name="sort" class="form-control" style="width: auto;">
+                <option value="floor" {% if qs.get('sort') == 'floor' %}selected{% endif %}>קומה</option>
+                <option value="room_number" {% if qs.get('sort') == 'room_number' %}selected{% endif %}>מספר חדר</option>
+                <option value="employee_count" {% if qs.get('sort') == 'employee_count' %}selected{% endif %}>מספר עובדים</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <select name="order" class="form-control" style="width: auto;">
+                <option value="asc" {% if qs.get('order') == 'asc' %}selected{% endif %}>עולה</option>
+                <option value="desc" {% if qs.get('order') == 'desc' %}selected{% endif %}>יורד</option>
+            </select>
+        </div>
+        <button type="submit" class="btn">סנן ומיין</button>
+    </form>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>מזהה</th>
+                    <th>קומה</th>
+                    <th>חדר</th>
+                    <th>תפוסה מקסימלית</th>
+                    <th>משוייכים כעת</th>
+                    <th>פעולות</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in offices %}
+                <tr class="{% if o.employee_count > o.capacity %}row-overcapacity{% elif o.employee_count == 0 %}row-empty{% else %}row-available{% endif %}">
+                    <td>{{ o.id }}</td>
+                    <td>{{ o.floor }}</td>
+                    <td>{{ o.room_number }}</td>
+                    <td>{{ o.capacity }}</td>
+                    <td>{{ o.employee_count }}</td>
+                    <td>
+                        <a href="/ui/offices/{{ o.id }}" class="btn btn-secondary">צפה</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&filter_type={{ qs.get('filter_type','') }}&sort={{ qs.get('sort','id') }}&order={{ qs.get('order','asc') }}" class="page-item">הקודם</a>
+        {% endif %}
+        <span class="page-item active">{{ page }} / {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&filter_type={{ qs.get('filter_type','') }}&sort={{ qs.get('sort','id') }}&order={{ qs.get('order','asc') }}" class="page-item">הבא</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

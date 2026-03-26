@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>עובדים</h1>
+        <a href="/ui/employees/new" class="btn">הוסף עובד חדש</a>
+    </div>
+    
+    <form class="filters-bar" method="GET" action="/ui/employees">
+        <div class="form-group">
+            <label>סטטוס שיוך:</label>
+            <select name="filter_type" class="form-control" style="width: auto;">
+                <option value="">הכל</option>
+                <option value="unassigned" {% if qs.get('filter_type') == 'unassigned' %}selected{% endif %}>ללא משרד</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>מחלקה:</label>
+            <input type="text" name="department" class="form-control" style="width: 120px;" value="{{ qs.get('department','') }}">
+        </div>
+        
+        <div class="form-group">
+            <label>ותק מינימלי:</label>
+            <input type="number" name="min_seniority" class="form-control" style="width: 80px;" value="{{ qs.get('min_seniority','') }}">
+        </div>
+        
+        <div class="form-group">
+            <label>ותק מקסימלי:</label>
+            <input type="number" name="max_seniority" class="form-control" style="width: 80px;" value="{{ qs.get('max_seniority','') }}">
+        </div>
+        
+        <div class="form-group">
+            <label>מיון עובדים:</label>
+            <select name="sort" class="form-control" style="width: auto;">
+                <option value="id" {% if qs.get('sort') == 'id' %}selected{% endif %}>מזהה</option>
+                <option value="name" {% if qs.get('sort') == 'name' %}selected{% endif %}>שם</option>
+                <option value="department" {% if qs.get('sort') == 'department' %}selected{% endif %}>מחלקה</option>
+                <option value="seniority" {% if qs.get('sort') == 'seniority' %}selected{% endif %}>ותק</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <select name="order" class="form-control" style="width: auto;">
+                <option value="asc" {% if qs.get('order') == 'asc' %}selected{% endif %}>עולה</option>
+                <option value="desc" {% if qs.get('order') == 'desc' %}selected{% endif %}>יורד</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn">סנן ומיין</button>
+    </form>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>מזהה</th>
+                    <th>שם</th>
+                    <th>מחלקה</th>
+                    <th>ותק</th>
+                    <th>שיוך משרד</th>
+                    <th>פעולות</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in employees %}
+                <tr>
+                    <td>{{ e.id }}</td>
+                    <td>{{ e.name }}</td>
+                    <td>{{ e.department }}</td>
+                    <td>{{ e.seniority }} שנים</td>
+                    <td>
+                        {% if e.office_id %}
+                            קומה {{ e.office_floor }}, חדר {{ e.office_room_number }}
+                        {% else %}
+                            ללא שיוך
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/ui/employees/{{ e.id }}" class="btn btn-secondary">צפה</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&filter_type={{ qs.get('filter_type','') }}&department={{ qs.get('department','') }}&min_seniority={{ qs.get('min_seniority','') }}&max_seniority={{ qs.get('max_seniority','') }}&sort={{ qs.get('sort','id') }}&order={{ qs.get('order','asc') }}" class="page-item">הקודם</a>
+        {% endif %}
+        <span class="page-item active">{{ page }} / {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&filter_type={{ qs.get('filter_type','') }}&department={{ qs.get('department','') }}&min_seniority={{ qs.get('min_seniority','') }}&max_seniority={{ qs.get('max_seniority','') }}&sort={{ qs.get('sort','id') }}&order={{ qs.get('order','asc') }}" class="page-item">הבא</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

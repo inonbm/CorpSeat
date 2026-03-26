@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between;">
+        <h1>משרד: קומה {{ office.floor }}, חדר {{ office.room_number }}</h1>
+        <div>
+            <a href="/ui/offices/{{ office.id }}/edit" class="btn btn-secondary">ערוך</a>
+            <form action="/ui/offices/{{ office.id }}/delete" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger">מחק משרד</button>
+            </form>
+        </div>
+    </div>
+    
+    <p>תפוסה מקסימלית מיועדת: <strong>{{ office.capacity }}</strong></p>
+    <p>משוייכים בפועל: <strong>{{ office.employee_count }}</strong></p>
+    
+    {% if office.employee_count > office.capacity %}
+    <p style="color:var(--error-border); font-weight:bold;">שים לב: המשרד נמצא כרגע בחריגת תפוסה.</p>
+    {% endif %}
+
+    <h2 style="margin-top: 2rem;">עובדים המשויכים למשרד</h2>
+    {% if employees %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>מזהה</th>
+                    <th>שם</th>
+                    <th>מחלקה</th>
+                    <th>ותק נוכחי (בשנים)</th>
+                    <th>צפה</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in employees %}
+                <tr>
+                    <td>{{ e.id }}</td>
+                    <td>{{ e.name }}</td>
+                    <td>{{ e.department }}</td>
+                    <td>{{ e.seniority }}</td>
+                    <td><a href="/ui/employees/{{ e.id }}" class="btn btn-secondary">עבור</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted)">המשרד ריק, אין עובדים משוייכים למשרד זה כעת.</p>
+    {% endif %}
+</div>
+{% endblock %}

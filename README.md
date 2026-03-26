@@ -178,3 +178,19 @@ The Flask Routing layer acts strictly as a traffic controller managing parameter
 
 ---
 *End of Phase 5 documentation.*
+
+---
+
+## Phase 6: UI (HTML/CSS ONLY)
+
+The Visual interface is strictly bounded to server-side render lifecycles strictly honoring Hebrew language constraints and zero-Javascript policies.
+* **Pure HTML/CSS Foundation**:
+  * Utilizes native, modern standard CSS variables, Flexbox layouts, and modern Web typography (`Inter`) yielding a premium UX natively without Tailwind/Bootstrap or any JS-based framework.
+  * Implements explicit native class-binding (`row-overcapacity`, `row-empty`, `row-available`) for distinct visual states computed entirely server-side.
+* **Server-Side Rendering Orchestration**: Native `GET` HTML query strings orchestrate full sorting and filtering matrices via standard HTML form submissions, preventing ANY client-side mapping operations or AJAX.
+* **Robust Navigation**: Global responsive navigation headers orchestrate page transitions internally via `href` anchors resolving directly to explicit `/ui/` Flask Endpoints.
+* **Form Mutations**: Every user state modification explicitly triggers a `POST` form parsing safely at endpoints before evaluating via business tier orchestrators causing HTTP safe `302/301` REDIRECTS to dynamic HTML endpoints natively.
+* **Continuous Validations**: Automated Pytest assertions (`test_ui.py`) explicitly sweep internal HTML response strings prohibiting any arbitrary `<script>` blocks ensuring flawless backend segregation.
+
+---
+*End of Phase 6 documentation.*

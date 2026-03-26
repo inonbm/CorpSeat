@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h1>{% if office %}ערוך מידע על המשרד{% else %}הוסף משרד חדש{% endif %}</h1>
+    <form method="POST" action="{% if office %}/ui/offices/{{ office.id }}/edit{% else %}/ui/offices{% endif %}">
+        <div class="form-group">
+            <label>קומה</label>
+            <input type="number" name="floor" class="form-control" required value="{{ office.floor if office else '' }}">
+        </div>
+        <div class="form-group">
+            <label>מספר חדר (Room Number)</label>
+            <input type="number" name="room_number" class="form-control" required value="{{ office.room_number if office else '' }}">
+        </div>
+        <div class="form-group">
+            <label>תפוסה מיועדת (קיבולת)</label>
+            <input type="number" name="capacity" class="form-control" required min="1" value="{{ office.capacity if office else '' }}">
+        </div>
+        <button type="submit" class="btn">{% if office %}עדכן שינויים{% else %}צור משרד{% endif %}</button>
+    </form>
+</div>
+{% endblock %}

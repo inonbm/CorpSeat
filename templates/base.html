@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול משרדים ועובדים</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand">CorpSeat - ניהול החברה</div>
+        <div>
+            <a href="/ui/offices">משרדים</a>
+            <a href="/ui/employees">עובדים</a>
+            <a href="/ui/assign">שיוך עובדים מרוכז</a>
+        </div>
+    </nav>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
