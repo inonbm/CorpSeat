@@ -7,6 +7,12 @@ app = Flask(__name__)
 app.register_blueprint(api_bp)
 app.register_blueprint(ui_bp)
 
+from flask import redirect, url_for
+
+@app.route('/')
+def index():
+    return redirect('/ui/offices')
+
 @app.before_request
 def before_request():
     g.db = get_db_connection()
