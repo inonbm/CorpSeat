@@ -129,3 +129,19 @@ CREATE TABLE employees (
 
 ---
 *End of Phase 2 documentation.*
+
+---
+
+## Phase 3: Data Access Layer
+
+The Data Access layer explicitly isolates raw SQL queries away from the API/Services layer.
+* **ORM Zero**: No Object-Relational Mapping (ORM) dependencies are utilized.
+* **Direct Operations**: Implements CRUD functions via explicit raw parameterized queries, maximizing efficiency and protecting against SQL injections.
+* **Connection Context**: Every DAL function ingests a SQLite connection object (`conn`), allowing the higher logic layers to tightly control Transactionality and Rollbacks while the DAL blindly safely executes SQL.
+* **Key Implementations**:
+  * `dal/office_dal.py`: `create_office`, `get_office`, `get_all_offices`, `update_office`, `delete_office`
+  * `dal/employee_dal.py`: `create_employee`, `get_employee`, `get_all_employees`, `update_employee`, `delete_employee`, `get_employees_by_office`
+* **Rigorous Validation**: Edge behaviors (invalid deletes yielding `0` rowcounts, fetching employees on empty/ghost offices returning native empty lists `[]`, and seamless cascading ON DELETE logic bounds) precisely tested within isolation.
+
+---
+*End of Phase 3 documentation.*
