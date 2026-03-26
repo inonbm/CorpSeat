@@ -5,6 +5,16 @@
         <h1>עובדים</h1>
         <a href="/ui/employees/new" class="btn">הוסף עובד חדש</a>
     </div>
+    <div class="stats-row">
+        <div class="stat-card stat-primary">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">סה"כ עובדים</div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-value">{{ stats.unassigned }}</div>
+            <div class="stat-label">ללא משרד</div>
+        </div>
+    </div>
     <form class="filters-bar" method="GET" action="/ui/employees">
         <div class="form-group">
             <label>סטטוס שיוך:</label>

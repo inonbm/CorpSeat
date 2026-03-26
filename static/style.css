@@ -59,7 +59,7 @@ body {
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background: var(--bg-sidebar);
+  background: linear-gradient(180deg, #ffffff 0%, #f0f1f5 100%);
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-sidebar);
@@ -235,8 +235,8 @@ th {
 }
 td { padding: 1.25rem; border-bottom: 1px solid var(--border); color: var(--text-main); font-weight: 500; font-size: 0.95rem; }
 tr:last-child td { border-bottom: none; }
-tr { transition: background 0.2s ease; }
-tr:hover { background: #fcfcfc; cursor: default; }
+tr { transition: all 0.2s ease; }
+tr:hover { background: #eef0f4; box-shadow: inset 4px 0 0 var(--primary); cursor: default; }
 
 /* Row Status Interactions */
 tr.row-overcapacity { background: var(--status-err-bg); }
@@ -266,3 +266,19 @@ input[type="checkbox"] { width: 1.2rem; height: 1.2rem; accent-color: var(--prim
 
 /* Table action buttons spacing */
 td .btn { margin-left: 0.25rem; margin-bottom: 0.25rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+
+/* KPI Stat Cards */
+.stats-row { display: flex; gap: 1.25rem; margin-bottom: 2rem; }
+.stat-card { flex: 1; padding: 1.5rem; border-radius: var(--radius-lg); text-align: center; border: 1px solid var(--border); transition: transform 0.2s ease; }
+.stat-card:hover { transform: translateY(-3px); }
+.stat-value { font-size: 2.5rem; font-weight: 800; line-height: 1; margin-bottom: 0.25rem; }
+.stat-label { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+.stat-primary { background: var(--primary-light); }
+.stat-primary .stat-value { color: var(--primary); }
+.stat-danger { background: var(--status-err-bg); }
+.stat-danger .stat-value { color: var(--status-err-text); }
+.stat-warning { background: var(--status-warn-bg); }
+.stat-warning .stat-value { color: var(--status-warn-text); }
+
+/* Footer */
+.footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: auto; }

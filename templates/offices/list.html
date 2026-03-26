@@ -5,6 +5,20 @@
         <h1>משרדים</h1>
         <a href="/ui/offices/new" class="btn">הוסף משרד חדש</a>
     </div>
+    <div class="stats-row">
+        <div class="stat-card stat-primary">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">סה"כ משרדים</div>
+        </div>
+        <div class="stat-card stat-danger">
+            <div class="stat-value">{{ stats.overcapacity }}</div>
+            <div class="stat-label">בחריגת תפוסה</div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-value">{{ stats.empty }}</div>
+            <div class="stat-label">משרדים ריקים</div>
+        </div>
+    </div>
     <form class="filters-bar" method="GET" action="/ui/offices">
         <div class="form-group">
             <label>סינון משרד:</label>

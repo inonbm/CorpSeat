@@ -16,14 +16,25 @@ def list_offices():
     if sort_order not in ['asc', 'desc']:
         sort_order = 'asc'
         
-    offices = office_service.get_offices_list(g.db, filter_type or None, sort_field, sort_order)
+    offices = office_service.get_offices_list(g.db, None, sort_field, sort_order)
+    stats = {
+        'total': len(offices),
+        'overcapacity': sum(1 for o in offices if o['employee_count'] > o['capacity']),
+        'empty': sum(1 for o in offices if o['employee_count'] == 0)
+    }
+    if filter_type == 'empty':
+        offices = [o for o in offices if o['employee_count'] == 0]
+    elif filter_type == 'available':
+        offices = [o for o in offices if o['employee_count'] < o['capacity']]
+    elif filter_type == 'overcapacity':
+        offices = [o for o in offices if o['employee_count'] > o['capacity']]
     total = len(offices)
     total_pages = (total + limit - 1) // limit if total > 0 else 1
     page = max(1, min(page, total_pages))
     start = (page - 1) * limit
     paginated = offices[start:start+limit]
     
-    return render_template('offices/list.html', offices=paginated, page=page, total_pages=total_pages, qs=request.args)
+    return render_template('offices/list.html', offices=paginated, page=page, total_pages=total_pages, qs=request.args, stats=stats)
 
 @ui_bp.route('/offices/new', methods=['GET'])
 def new_office():
@@ -107,9 +118,20 @@ def list_employees():
     except ValueError:
         max_sen_val = None
         
-    emps = employee_service.get_employees_list(
-        g.db, filter_type or None, dept or None, min_sen_val, max_sen_val, sort_field, sort_order
-    )
+    all_emps = employee_service.get_employees_list(g.db, None, None, None, None, sort_field, sort_order)
+    stats = {
+        'total': len(all_emps),
+        'unassigned': sum(1 for e in all_emps if e['office_id'] is None)
+    }
+    emps = list(all_emps)
+    if filter_type == 'unassigned':
+        emps = [e for e in emps if e['office_id'] is None]
+    if dept:
+        emps = [e for e in emps if e['department'].lower() == dept.lower()]
+    if min_sen_val is not None:
+        emps = [e for e in emps if e['seniority'] >= min_sen_val]
+    if max_sen_val is not None:
+        emps = [e for e in emps if e['seniority'] <= max_sen_val]
     
     total = len(emps)
     total_pages = (total + limit - 1) // limit if total > 0 else 1
@@ -117,7 +139,7 @@ def list_employees():
     start = (page - 1) * limit
     paginated = emps[start:start+limit]
     
-    return render_template('employees/list.html', employees=paginated, page=page, total_pages=total_pages, qs=request.args)
+    return render_template('employees/list.html', employees=paginated, page=page, total_pages=total_pages, qs=request.args, stats=stats)
 
 @ui_bp.route('/employees/new', methods=['GET'])
 def new_employee():
