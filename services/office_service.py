@@ -51,3 +51,17 @@ def assign_employees_to_office(conn, office_id, employee_ids):
     except Exception as e:
         conn.rollback()
         raise e
+
+
+def get_offices_list(conn, filter_type=None, sort_field='id', sort_order='asc'):
+    offices = office_dal.get_offices_with_stats(conn)
+    if filter_type == 'empty':
+        offices = [o for o in offices if o['employee_count'] == 0]
+    elif filter_type == 'available':
+        offices = [o for o in offices if 0 < o['employee_count'] <= o['capacity']]
+    elif filter_type == 'overcapacity':
+        offices = [o for o in offices if o['employee_count'] > o['capacity']]
+        
+    rev = (sort_order == 'desc')
+    offices.sort(key=lambda x: x.get(sort_field, 0), reverse=rev)
+    return offices

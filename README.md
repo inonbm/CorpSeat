@@ -159,3 +159,22 @@ The Business Logic layer securely orchestrates rules, limits, and dynamic comput
 
 ---
 *End of Phase 4 documentation.*
+
+---
+
+## Phase 5: API & UI Routes (Flask)
+
+The Flask Routing layer acts strictly as a traffic controller managing parameters, triggering service logic, and dictating response shapes.
+* **Namespace Isolation**:
+  * `/api/`: Strictly serves generic JSON responses conforming exactly to the structured protocol.
+  * `/ui/` (GET): Strictly returns HTML template responses exclusively.
+  * `/ui/` (POST): Strictly processes UI form mutations and returns redirection bindings. No JSON mixing whatsoever.
+* **Consistent Pagination & Standardization**: All list endpoints implement robust pagination (`?page=X&limit=X`) serving standardized metadata (`total`, `total_pages`). Non-positive constraints bounce as HTTP `400 Bad Request`. Exceeding bounds returns graceful empty data configurations seamlessly.
+* **Refined Sort Filtering**: Request targets (`?sort=XXX`) are strictly validated against predetermined whitelists before dynamically ordering responses in Python memory.
+* **Extensive Endpoints Built**:
+  * `/api/offices`: Includes advanced dynamic filters targeting boolean states such as `empty`, `available`, and `overcapacity`.
+  * `/api/employees`: Advanced filters integrating `department` matches, unbound `unassigned` flags, and numerical bounds resolving `min_seniority`/`max_seniority`.
+  * `/api/assign`: Exposes an atomic JSON endpoint connecting Office structures cleanly to batches of Employees leveraging transactional rollbacks on fail.
+
+---
+*End of Phase 5 documentation.*

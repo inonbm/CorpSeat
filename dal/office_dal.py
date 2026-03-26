@@ -21,3 +21,24 @@ def update_office(conn, office_id, floor, room_number, capacity):
 def delete_office(conn, office_id):
     cur = conn.execute("DELETE FROM offices WHERE id = ?", (office_id,))
     return cur.rowcount
+
+
+def get_offices_with_stats(conn):
+    query = '''
+    SELECT o.id, o.floor, o.room_number, o.capacity, COUNT(e.id) as employee_count
+    FROM offices o
+    LEFT JOIN employees e ON o.id = e.office_id
+    GROUP BY o.id
+    '''
+    return [dict(row) for row in conn.execute(query).fetchall()]
+
+def get_office_with_stats(conn, office_id):
+    query = '''
+    SELECT o.id, o.floor, o.room_number, o.capacity, COUNT(e.id) as employee_count
+    FROM offices o
+    LEFT JOIN employees e ON o.id = e.office_id
+    WHERE o.id = ?
+    GROUP BY o.id
+    '''
+    row = conn.execute(query, (office_id,)).fetchone()
+    return dict(row) if row else None
