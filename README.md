@@ -33,36 +33,45 @@ CorpSeat/
     └── test_ui.py           # HTML Structure (No-JS Enforcement) Tests
 ```
 
-## Installation Instructions
+## Installation & Deployment Options
 
-1. **Clone the Repository**
+You can deploy CorpSeat conventionally via Python environments or natively via Docker.
+
+### Option A: Fully Containerized via Docker Compose (Recommended)
+This approach automatically manages Dependencies, Gunicorn Production Web Servers, and Database bootstrapping utilizing ephemeral images mapped explicitly to persistent volumes.
+1. **Clone the repository**
    ```bash
    git clone https://github.com/inonbm/CorpSeat.git
    cd CorpSeat
    ```
+2. **Launch the Production Stack**
+   ```bash
+   docker compose up -d
+   ```
+   *The smart entrypoint script will automatically detect if `corpseat.db` exists in the `/app/data` volume. If missing, it immediately bootstraps your schema before serving traffic via Gunicorn.*
+3. Open `http://localhost:5000/`
 
-2. **Set up Virtual Environment**
+### Option B: Local Python Environment
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/inonbm/CorpSeat.git
+   cd CorpSeat
+   ```
+2. **Build Virtual Environment**
    ```bash
    python3 -m venv venv
    source venv/bin/activate
-   ```
-
-3. **Install Dependencies**
-   ```bash
    pip install -r requirements.txt
    ```
-
-4. **Initialize the Database**
-   This creates `corpseat.db` with the schema matching the architectural logic.
+3. **Initialize Database natively**
    ```bash
    python3 -c "from dal.db import init_db; init_db()"
    ```
-
-5. **Run the Project**
+4. **Boot Development Server**
    ```bash
    python3 app.py
    ```
-   Open your browser and navigate to: `http://127.0.0.1:5000/ui/offices`
+   Open `http://localhost:5000/`
 
 ## Testing Instructions
 The system includes an extensive 24-test suite that validates data cascading, logic bounds, and HTTP rendering compliance.
