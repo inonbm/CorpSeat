@@ -92,3 +92,40 @@ CorpSeat/
 
 ---
 *End of Phase 1 documentation.*
+
+---
+
+## Phase 2: Database Design
+
+### SQL Schema (`dal/schema.sql`)
+The underlying datastore exclusively uses strictly defined SQLite constraints.
+
+```sql
+CREATE TABLE offices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    floor INTEGER NOT NULL,
+    room_number INTEGER NOT NULL,
+    capacity INTEGER NOT NULL CHECK (capacity > 0),
+    UNIQUE(floor, room_number)
+);
+
+CREATE TABLE employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    department TEXT NOT NULL,
+    hire_date TEXT NOT NULL,
+    salary REAL NOT NULL CHECK (salary > 0),
+    office_id INTEGER NULL,
+    FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE SET NULL
+);
+```
+
+### Constraints & Integrity Rules
+* **Foreign Keys Enforcement**: SQLite requires explicit PRAGMA definition to enable enforcement. `db.py` rigidly attaches `PRAGMA foreign_keys = ON;` on every connection.
+* **Cascading Delete**: Validated `ON DELETE SET NULL` upon office removal ensures orphaned employees drop cleanly into the unassigned pool.
+* **Check Validators**: DB strictly ensures `salary > 0` and `capacity > 0`.
+* **Unique Spaces**: A `UNIQUE` constraint over `(floor, room_number)` guards against overlapping physical layouts.
+* **Deferred Logic**: Due to SQLite restriction on dynamic checking, dates (`hire_date` limit) are shifted to application/business logic validation scope exclusively.
+
+---
+*End of Phase 2 documentation.*
