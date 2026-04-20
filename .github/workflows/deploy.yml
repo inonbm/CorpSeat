@@ -1,15 +1,11 @@
 name: CorpSeat CI/CD Pipeline
 
-# מתי הרובוט מתעורר? בכל פעם שעושים Push לענף הראשי (main)
 on:
   push:
     branches:
       - main
 
 jobs:
-  # ----------------------------------------------------
-  # עבודה 1: בנייה ודחיפה לדוקר האב (בדיוק מה שעשינו ידנית)
-  # ----------------------------------------------------
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -27,16 +23,11 @@ jobs:
         with:
           context: .
           push: true
-          # אנחנו דוחפים גם תווית latest וגם תווית עם המזהה של הקומיט
           tags: |
             inonbm/corpseat:latest
             inonbm/corpseat:${{ github.sha }}
 
-  # ----------------------------------------------------
-  # עבודה 2: פריסה לשרת של אמזון (EC2)
-  # ----------------------------------------------------
   deploy-to-ec2:
-    # אנחנו אומרים לגיטהאב: אל תתחיל את הפריסה לפני שהבנייה (העבודה הקודמת) הסתיימה בהצלחה
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
@@ -46,16 +37,14 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          # אלו הפקודות שהרובוט יקליד בתוך השרת של אמזון:
           script: |
-            # 1. משיכת הגרסה הכי חדשה מהמחסן
             docker pull inonbm/corpseat:latest
-            
-            # 2. עצירת האפליקציה הישנה (הוספנו || true כדי שאם היא לא קיימת, הריצה לא תוכשל)
             docker stop corpseat-app || true
-            
-            # 3. מחיקת האפליקציה הישנה
             docker rm corpseat-app || true
-            
-            # 4. הרצת האפליקציה החדשה עם הפורטים הפתוחים
             docker run -d -p 5000:5000 --name corpseat-app inonbm/corpseat:latest
+      - name: Health Check (Smoke Test)
+        run: |
+          echo "Waiting 10 seconds for Flask to boot..."
+          sleep 10
+          echo "Pinging the application..."
+          curl --fail http://${{ secrets.EC2_HOST }}:5000
