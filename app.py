@@ -3,8 +3,6 @@ from dal.db import get_db_connection
 from routes.api_routes import api_bp
 from routes.ui_routes import ui_bp
 
-import i_am_a_fake_module_that_will_crash_the_app
-
 app = Flask(__name__)
 app.secret_key = 'corpseat-secret-key-2026'
 app.register_blueprint(api_bp)
