@@ -6,9 +6,6 @@ on:
       - main
 
 jobs:
-  # ----------------------------------------------------
-  # עבודה 1: בנייה ודחיפה - ללא תגית Latest!
-  # ----------------------------------------------------
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -26,56 +23,66 @@ jobs:
         with:
           context: .
           push: true
-          # שים לב! מחקנו מכאן את ה-latest. רק גרסה ספציפית עולה כרגע.
           tags: |
             inonbm/corpseat:${{ github.sha }}
 
-  # ----------------------------------------------------
-  # עבודה 2: פריסה, טסט, רולבאק וקידום תגיות
-  # ----------------------------------------------------
   deploy-and-test:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: SSH into EC2, Deploy, Test and Rollback
+      # חובה לעשות צ'קאאוט גם פה כדי שהרובוט יוכל לקחת את הקבצים מהפרויקט
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # העתקת קובץ הקומפוז ותיקיית Nginx לשרת של אמזון
+      - name: Copy Compose and Nginx config to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml,nginx/"
+          target: "~/corpseat-deploy"
+
+      - name: SSH, Deploy with Compose, Test and Rollback
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            cd ~/corpseat-deploy
             NEW_VERSION="${{ github.sha }}"
-
-            # 1. מושכים את הגרסה הספציפית
-            docker pull inonbm/corpseat:$NEW_VERSION
-
-            # 2. שומרים על הקיים: משנים את השם של הקופסה הישנה במקום למחוק אותה!
-            docker rename corpseat-app corpseat-app-old || true
-            docker stop corpseat-app-old || true
-
-            # 3. מריצים את הגרסה החדשה
-            docker run -d -p 5000:5000 --name corpseat-app inonbm/corpseat:$NEW_VERSION
-
-            # 4. טסט מקומי: בגלל שהסקריפט רץ בתוך השרת, אפשר לבדוק ישירות מול localhost
-            echo "Waiting 5 seconds for Flask to boot..."
+            
+            # 1. מציאת הגרסה שעובדת כרגע באוויר (לפני שדורסים אותה)
+            # אם הקונטיינר לא קיים, נשתמש ב-latest כברירת מחדל
+            PREV_VERSION=$(docker inspect --format '{{.Config.Image}}' corpseat_web 2>/dev/null | cut -d ':' -f 2 || echo "latest")
+            
+            # 2. כתיבת הגרסה החדשה לקובץ סביבה כדי שקומפוז יקרא אותה
+            echo "APP_VERSION=$NEW_VERSION" > .env
+            
+            # 3. משיכה והרצה של התזמורת המלאה (פליסק + אנג'ינקס)
+            docker compose pull
+            docker compose up -d
+            
+            echo "Waiting 5 seconds for systems to boot..."
             sleep 5
-
-            # לוגיקת הרולבאק: אם עובד - מוחקים גיבוי. אם נופל - מוחזיר גיבוי.
-            if curl --fail http://localhost:5000; then
-              echo "✅ Test Passed! New version is healthy."
-              docker rm corpseat-app-old || true
+            
+            # 4. בדיקת בריאות מול השומר שלנו (Nginx בפורט 80)
+            if curl --fail http://localhost; then
+              echo "✅ Test Passed! Nginx is serving Flask perfectly."
             else
-              echo "❌ Test Failed! Initiating Rollback..."
-              docker stop corpseat-app || true
-              docker rm corpseat-app || true
-              docker rename corpseat-app-old corpseat-app
-              docker start corpseat-app
-              echo "🔄 Rollback complete. The previous stable version is back online."
-              exit 1 # פקודה חשובה - אומרת לגיטהאב שהשלב הזה נכשל
+              echo "❌ Test Failed! Rolling back to version $PREV_VERSION..."
+              
+              # משנים את משתנה הסביבה בחזרה לגרסה הישנה ומריצים שוב
+              echo "APP_VERSION=$PREV_VERSION" > .env
+              docker compose up -d
+              
+              echo "🔄 Rollback complete."
+              exit 1
             fi
 
       - name: Promote to Latest in Docker Hub
-        # השלב הזה קריטי: הוא ירוץ *אך ורק* אם סקריפט ה-SSH (והטסט בתוכו) הסתיים בהצלחה (ללא exit 1)
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker pull inonbm/corpseat:${{ github.sha }}

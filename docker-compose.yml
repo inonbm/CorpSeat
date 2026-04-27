@@ -1,14 +1,27 @@
+version: '3.8'
+
 services:
   web:
-    build: .
+    image: inonbm/corpseat:${APP_VERSION:-latest}
     container_name: corpseat_web
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     volumes:
       - corpseat_data:/app/data
     environment:
       - FLASK_ENV=production
       - DB_PATH=/app/data/corpseat.db
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    container_name: corpseat_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
     restart: unless-stopped
 
 volumes:
